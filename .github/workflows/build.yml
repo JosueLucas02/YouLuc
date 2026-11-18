@@ -1,0 +1,37 @@
+name: Compilar YouLuc
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Descomprimir código
+        run: unzip -q YouLuc-codigo.zip
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: android-actions/setup-android@v3
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Compilar APK
+        working-directory: YouLuc
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleUniversalRelease --stacktrace
+
+      - name: Subir APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: YouLuc-apk
+          path: YouLuc/app/build/outputs/apk/universal/release/*.apk
